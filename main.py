@@ -10,8 +10,8 @@ characters_csv ='characters_data.csv'
 def gel_all_links():
     page = requests.get('https://www.marvel.com/characters')
     soup = BeautifulSoup(page.content, 'html.parser')
-    pages =[]
-    mvl_cards=soup.find('div', {'class':'full-content'}).find_all('div', {'class':'mvl-card mvl-card--explore'})
+    pages = []
+    mvl_cards = soup.find('div', {'class':'full-content'}).find_all('div', {'class':'mvl-card mvl-card--explore'})
     for i in range(len(mvl_cards)-1):
         link = mvl_cards[i]
         page = link.find('a')
@@ -39,13 +39,19 @@ def create_characters_df():
         request = requests.get(base_url+str(link))
         content=request.content
         soup = BeautifulSoup(content,'html.parser')
-        marvel_characters['Name']=soup.find('h1').text.replace("\n", "").strip()
+        marvel_characters['Name'] = soup.find('h1').text.replace("\n", "").strip()
         marvel_characters['Link'] = link
-        print(soup.find('h1').text.replace("\n", "").strip(),base_url+str(link))
-        label=soup.findAll('p',{'class':'bioheader__label'})
-        stat=soup.findAll('p',{'class':'bioheader__stat'})
+        marvel_characters['Universe'] = soup.findAll('ul', {'class': 'railBioInfo'})
+        marvel_characters['Other aliases'] = soup.findAll('ul', {'class': 'railBioInfo'})
+        marvel_characters['Education'] = soup.findAll('ul', {'class': 'railBioInfo'})
+        marvel_characters['Place of origin'] = soup.findAll('ul', {'class': 'railBioInfo'})
+        marvel_characters['Identity'] = soup.findAll('ul', {'class': 'railBioInfo'})
+        marvel_characters['Known relatives'] = soup.findAll('ul', {'class': 'railBioInfo'})
+        print(soup.find('h1').text.replace("\n", "").strip(), base_url+str(link))
+        label = soup.findAll('p', {'class': 'bioheader__label'})
+        stat = soup.findAll('p', {'class': 'bioheader__stat'})
         for i in range(len(label)):
-            column =label[i].text.title()
+            column = label[i].text.title()
             if column not in columns:
                 columns.append(column)
                 try:
@@ -59,7 +65,7 @@ def create_characters_df():
 def main():
     files = glob.glob("*.csv")
     if characters_csv not in files:
-        if pages_csv not  in files:
+        if pages_csv not in files:
             print('Create characters pages')
             gel_all_links()
         print('Data set create')
@@ -67,10 +73,9 @@ def main():
     df = read_csv_file(characters_csv)
     df = df.fillna('')
     print('Columns:', df.columns.values)
-    print(df[['Link','Eyes']])
+    print(df[['Name', 'Link', 'Universe', 'Other aliases', 'Education', 'Place of origin', 'Identity', 'Known relatives']])
 
 if __name__ == '__main__':
     main()
 
-df =pandas.read_csv('characters_data.csv')
-df.shape
+df = pandas.read_csv('characters_data.csv')
